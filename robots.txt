@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://Lavya-builder.github.io/platesync/sitemap.xml

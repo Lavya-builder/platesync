@@ -1,0 +1,299 @@
+{
+  "name": "WhatsApp Customer-Care Workflow",
+  "nodes": [
+    {
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [250, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-webhook",
+        "responseMode": "responseNode"
+      },
+      "webhookId": "whatsapp-webhook"
+    },
+    {
+      "name": "Extract Message",
+      "type": "n8n-nodes-base.code",
+      "position": [450, 300],
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst phone = data.from || data.phone || \"\";\nconst rawMessage = data.body || data.text || \"\";\nconst message = rawMessage.toLowerCase().trim();\nconst timestamp = new Date().toISOString();\nlet intent = \"\";\nif (message.match(/hi|hello|hey|hii|namaste|namaskar/)) intent = \"greeting\";\nelse if (message.match(/price|cost|charge|rate|fees|kitna|kitne paisa/)) intent = \"pricing_query\";\nelse if (message.match(/timing|time|open|close|kab|delivery|hours|kitne din/)) intent = \"timing_query\";\nelse if (message.match(/order|status|ready|delivery|pickup|mera order/)) intent = \"order_status\";\nelse if (message.match(/service|product|available|stitching|alteration|blouse|suit|lehenga|kurti|dress/)) intent = \"product_service_guidance\";\nelse if (message.match(/complaint|problem|issue|kharab|galat|late|angry|disappointed/)) intent = \"complaint\";\nelse if (message.match(/refund|return|paise wapas|money back/)) intent = \"refund_request\";\nelse if (message.match(/call|phone|baat|owner se baat|callback/)) intent = \"callback_request\";\nelse if (message.match(/angry|frustrated|upset|irritated|naraaz/)) intent = \"angry_customer\";\nelse if (message.match(/cancel|cancellation|cancel order|cancel kar do/)) intent = \"cancellation_request\";\nelse if (message.match(/legal|lawyer|court|police|threat|complaint register/)) intent = \"legal_threat\";\nelse intent = \"unknown\";\nreturn [{ json: { phone, raw_message: rawMessage, message, timestamp, intent } }];"
+      }
+    },
+    {
+      "name": "Log Incoming to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [650, 300],
+      "parameters": {
+        "operation": "append",
+        "sheetId": "",
+        "range": "A:E"
+      }
+    },
+    {
+      "name": "KB Lookup",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [850, 300],
+      "parameters": {
+        "operation": "read",
+        "sheetId": ""
+      }
+    },
+    {
+      "name": "KB Match Code",
+      "type": "n8n-nodes-base.code",
+      "position": [1050, 300],
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst message = input.message;\nconst kbItems = $items(\"KB Lookup\");\nlet kbReply = \"\";\nfor (const item of kbItems) {\n  const keywords = (item.json.keywords || \"\").toLowerCase();\n  const keywordList = keywords.split(\",\").map(function(k) { return k.trim(); });\n  for (let i = 0; i < keywordList.length; i++) {\n    if (message.includes(keywordList[i])) {\n      kbReply = item.json.reply || item.json.answer || \"\";\n      break;\n    }\n  }\n  if (kbReply) break;\n}\nreturn [{ json: { phone: input.phone, raw_message: input.raw_message, message: input.message, timestamp: input.timestamp, intent: input.intent, kb_reply: kbReply } }];"
+      }
+    },
+    {
+      "name": "KB Found?",
+      "type": "n8n-nodes-base.if",
+      "position": [1250, 300],
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "value1": "={{$json.kb_reply}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "WhatsApp Send KB Reply",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [1450, 200],
+      "parameters": {
+        "operation": "sendMessage",
+        "to": "={{$json.phone}}",
+        "body": "={{$json.kb_reply}}"
+      }
+    },
+    {
+      "name": "Big Intent Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [1450, 400],
+      "parameters": {
+        "dataPropertyName": "={{$json.intent}}",
+        "rules": {
+          "rules": [
+            { "value": "greeting" },
+            { "value": "pricing_query" },
+            { "value": "timing_query" },
+            { "value": "order_status" },
+            { "value": "product_service_guidance" },
+            { "value": "complaint" },
+            { "value": "refund_request" },
+            { "value": "callback_request" },
+            { "value": "angry_customer" },
+            { "value": "cancellation_request" },
+            { "value": "legal_threat" },
+            { "value": "unknown" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate Rule Reply",
+      "type": "n8n-nodes-base.code",
+      "position": [1650, 200],
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst intent = input.intent;\nconst phone = input.phone;\nconst replies = {\n  greeting: \"Namaste! Kaise help kar sakte hain?\",\n  pricing_query: \"Price item/design par depend karta hai. Aap bata dijiye?\",\n  timing_query: \"Shop timing owner confirm karenge. Aap approx kab visit karna chahte hain?\",\n  order_status: \"Aap apna naam ya order detail bhej dijiye, hum check karke update denge.\",\n  product_service_guidance: \"Hum stitching, alteration aur boutique related enquiries handle karte hain. Aap bataiye kis item ke liye help chahiye?\"\n};\nreturn [{ json: { phone: phone, intent: intent, rule_reply: replies[intent] || \"\" } }];"
+      }
+    },
+    {
+      "name": "WhatsApp Send Rule Reply",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [1850, 200],
+      "parameters": {
+        "operation": "sendMessage",
+        "to": "={{$json.phone}}",
+        "body": "={{$json.rule_reply}}"
+      }
+    },
+    {
+      "name": "Risky Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [1650, 400],
+      "parameters": {
+        "dataPropertyName": "={{$json.intent}}",
+        "rules": {
+          "rules": [
+            { "value": "complaint" },
+            { "value": "refund_request" },
+            { "value": "callback_request" },
+            { "value": "angry_customer" },
+            { "value": "cancellation_request" },
+            { "value": "legal_threat" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Generate Telegram Alert",
+      "type": "n8n-nodes-base.code",
+      "position": [1850, 500],
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst alertMsg = \"ALERT: \" + input.intent.toUpperCase() + \"\\nPhone: \" + input.phone + \"\\nMessage: \" + input.raw_message + \"\\nTime: \" + new Date().toISOString();\nreturn [{ json: { phone: input.phone, intent: input.intent, alert_message: alertMsg } }];"
+      }
+    },
+    {
+      "name": "Telegram Send Alert",
+      "type": "n8n-nodes-base.telegram",
+      "position": [2050, 500],
+      "parameters": {
+        "operation": "sendMessage",
+        "chatId": "",
+        "text": "={{$json.alert_message}}"
+      }
+    },
+    {
+      "name": "WhatsApp acknowledgement",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [2250, 600],
+      "parameters": {
+        "operation": "sendMessage",
+        "to": "={{$json.phone}}",
+        "body": "Thank you for reaching out. Our team will review your request and contact you shortly."
+      }
+    },
+    {
+      "name": "AI Agent Fallback",
+      "type": "n8n-nodes-base.code",
+      "position": [1650, 700],
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\n// === Configuration ===\n// Set your OpenRouter API key in n8n Environment Variables as OPENROUTER_API_KEY\n// Or replace the line below with your actual key\nconst apiKey = \"$OPENROUTER_API_KEY\";\n\nif (!apiKey || apiKey === \"$OPENROUTER_API_KEY\") {\n  return [{ json: { phone: input.phone, raw_message: input.raw_message, intent: \"unknown\", confidence: 0, reply: \"\", escalate: true, reason: \"api_key_not_configured\" } }];\n}\n\ntry {\n  const response = await $http.post(\n    \"https://openrouter.ai/api/v1/chat/completions\",\n    {\n      model: \"qwen/qwen2.5-72b-instruct\",\n      messages: [\n        {\n          role: \"system\",\n          content: \"You are a customer care bot for a boutique. Analyze the user message and return ONLY valid JSON with these fields: intent (string), confidence (number 0-1), reply (string in Hindi/English), escalate (boolean), reason (string). No markdown, no extra text.\"\n        },\n        {\n          role: \"user\",\n          content: \"Session key: \" + input.phone + \"\\nUser message: \" + input.raw_message\n        }\n      ]\n    },\n    {\n      headers: {\n        \"Authorization\": \"Bearer \" + apiKey,\n        \"Content-Type\": \"application/json\",\n        \"HTTP-Referer\": \"https://n8n.workflow\",\n        \"X-Title\": \"WhatsApp Customer Care\"\n      }\n    }\n  );\n\n  let content = \"\";\n  if (typeof response === \"object\" && response.data) {\n    content = response.data.choices[0].message.content;\n  } else if (typeof response === \"object\" && response.body) {\n    content = response.body.choices[0].message.content;\n  }\n\n  let parsed = {};\n  try { parsed = JSON.parse(content); } catch (e) {}\n\n  return [{\n    json: {\n      phone: input.phone,\n      raw_message: input.raw_message,\n      intent: parsed.intent || \"unknown\",\n      confidence: typeof parsed.confidence === \"number\" ? parsed.confidence : 0,\n      reply: parsed.reply || \"\",\n      escalate: parsed.escalate === true,\n      reason: parsed.reason || \"\"\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      phone: input.phone,\n      raw_message: input.raw_message,\n      intent: \"unknown\",\n      confidence: 0,\n      reply: \"\",\n      escalate: true,\n      reason: \"api_error: \" + (error.message || \"unknown\")\n    }\n  }];\n}"
+      }
+    },
+    {
+      "name": "AI Decision",
+      "type": "n8n-nodes-base.if",
+      "position": [1850, 700],
+      "parameters": {
+        "combinator": "and",
+        "conditions": {
+          "conditions": [
+            { "value1": "={{$json.confidence}}", "operation": "gte", "value2": 0.6 },
+            { "value1": "={{$json.escalate}}", "operation": "notEqual", "value2": true }
+          ]
+        }
+      }
+    },
+    {
+      "name": "WhatsApp Send AI Reply",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [2050, 650],
+      "parameters": {
+        "operation": "sendMessage",
+        "to": "={{$json.phone}}",
+        "body": "={{$json.reply}}"
+      }
+    },
+    {
+      "name": "Generate AI Telegram Alert",
+      "type": "n8n-nodes-base.code",
+      "position": [2050, 800],
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst alertMsg = \"AI ESCALATE: \" + (input.intent || \"unknown\") + \" (confidence: \" + (input.confidence || 0) + \")\\nReason: \" + (input.reason || \"low confidence\") + \"\\nPhone: \" + input.phone + \"\\nMessage: \" + input.raw_message;\nreturn [{ json: { phone: input.phone, alert_message: alertMsg } }];"
+      }
+    },
+    {
+      "name": "Telegram Send AI Alert",
+      "type": "n8n-nodes-base.telegram",
+      "position": [2250, 800],
+      "parameters": {
+        "operation": "sendMessage",
+        "chatId": "",
+        "text": "={{$json.alert_message}}"
+      }
+    },
+    {
+      "name": "WhatsApp safe acknowledgement",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [2450, 900],
+      "parameters": {
+        "operation": "sendMessage",
+        "to": "={{$json.phone}}",
+        "body": "Thank you for your message. Our team will get back to you soon."
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Extract Message", "type": "main", "index": 0 }]]
+    },
+    "Extract Message": {
+      "main": [[{ "node": "Log Incoming to Google Sheets", "type": "main", "index": 0 }]]
+    },
+    "Log Incoming to Google Sheets": {
+      "main": [[{ "node": "KB Lookup", "type": "main", "index": 0 }]]
+    },
+    "KB Lookup": {
+      "main": [[{ "node": "KB Match Code", "type": "main", "index": 0 }]]
+    },
+    "KB Match Code": {
+      "main": [[{ "node": "KB Found?", "type": "main", "index": 0 }]]
+    },
+    "KB Found?": {
+      "main": [
+        [{ "node": "WhatsApp Send KB Reply", "type": "main", "index": 0 }],
+        [{ "node": "Big Intent Switch", "type": "main", "index": 0 }]
+      ]
+    },
+    "Big Intent Switch": {
+      "main": [
+        [{ "node": "Generate Rule Reply", "type": "main", "index": 0 }],
+        [{ "node": "Generate Rule Reply", "type": "main", "index": 1 }],
+        [{ "node": "Generate Rule Reply", "type": "main", "index": 2 }],
+        [{ "node": "Generate Rule Reply", "type": "main", "index": 3 }],
+        [{ "node": "Generate Rule Reply", "type": "main", "index": 4 }],
+        [{ "node": "Risky Switch", "type": "main", "index": 5 }],
+        [{ "node": "Risky Switch", "type": "main", "index": 6 }],
+        [{ "node": "Risky Switch", "type": "main", "index": 7 }],
+        [{ "node": "Risky Switch", "type": "main", "index": 8 }],
+        [{ "node": "Risky Switch", "type": "main", "index": 9 }],
+        [{ "node": "Risky Switch", "type": "main", "index": 10 }],
+        [{ "node": "AI Agent Fallback", "type": "main", "index": 11 }]
+      ]
+    },
+    "Generate Rule Reply": {
+      "main": [[{ "node": "WhatsApp Send Rule Reply", "type": "main", "index": 0 }]]
+    },
+    "Risky Switch": {
+      "main": [
+        [{ "node": "Generate Telegram Alert", "type": "main", "index": 0 }],
+        [{ "node": "Generate Telegram Alert", "type": "main", "index": 1 }],
+        [{ "node": "Generate Telegram Alert", "type": "main", "index": 2 }],
+        [{ "node": "Generate Telegram Alert", "type": "main", "index": 3 }],
+        [{ "node": "Generate Telegram Alert", "type": "main", "index": 4 }],
+        [{ "node": "Generate Telegram Alert", "type": "main", "index": 5 }]
+      ]
+    },
+    "Generate Telegram Alert": {
+      "main": [[{ "node": "Telegram Send Alert", "type": "main", "index": 0 }]]
+    },
+    "Telegram Send Alert": {
+      "main": [[{ "node": "WhatsApp acknowledgement", "type": "main", "index": 0 }]]
+    },
+    "AI Agent Fallback": {
+      "main": [[{ "node": "AI Decision", "type": "main", "index": 0 }]]
+    },
+    "AI Decision": {
+      "main": [
+        [{ "node": "WhatsApp Send AI Reply", "type": "main", "index": 0 }],
+        [{ "node": "Generate AI Telegram Alert", "type": "main", "index": 1 }]
+      ]
+    },
+    "Generate AI Telegram Alert": {
+      "main": [[{ "node": "Telegram Send AI Alert", "type": "main", "index": 0 }]]
+    },
+    "Telegram Send AI Alert": {
+      "main": [[{ "node": "WhatsApp safe acknowledgement", "type": "main", "index": 0 }]]
+    }
+  },
+"staticData": null,
+  "triggerCount": 0
+}

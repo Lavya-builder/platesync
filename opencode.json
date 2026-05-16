@@ -1,0 +1,52 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "openrouter-custom/minimax/minimax-m2.5",
+  "instructions": ["./OPENCODE_RULES.md"],
+  "provider": {
+    "openrouter-custom": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "OpenRouter Custom 4096",
+      "options": {
+        "baseURL": "https://openrouter.ai/api/v1",
+        "apiKey": "{env:OPENROUTER_API_KEY}"
+      },
+      "models": {
+        "minimax/minimax-m2.5": {
+          "name": "MiniMax M2.5",
+          "limit": {
+            "context": 196000,
+            "output": 8000
+          }
+        },
+        "deepseek/deepseek-v3.2-exp": {
+          "name": "DeepSeek V3.2 Exp",
+          "limit": {
+            "context": 60000,
+            "output": 8000
+          }
+        },
+        "google/gemini-3-flash-preview": {
+          "name": "Gemini 3 Flash Preview",
+          "limit": {
+            "context": 1000000,
+            "output": 4096
+          }
+        },
+        "moonshotai/kimi-k2.6": {
+          "name": "Kimi K2.6",
+          "limit": {
+            "context": 256000,
+            "output": 4096
+          }
+        },
+        "anthropic/claude-sonnet-4.6": {
+          "name": "Claude Sonnet 4.6",
+          "limit": {
+            "context": 1000000,
+            "output": 4096
+          }
+        }
+      }
+    }
+  }
+}

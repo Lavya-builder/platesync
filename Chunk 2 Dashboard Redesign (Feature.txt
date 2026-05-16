@@ -1,0 +1,115 @@
+Chunk 2: Dashboard Redesign (Features)
+Prompt for Chunk 2:
+Chunk 2: Dashboard Redesign — Protein-Centric UI, Charts, Meal Planner
+ 
+Apply to CalTrack.html. Preserve ALL existing features including everything from Chunk 1.
+2.1 Sticky Protein Remaining Header
+1. On the dashboard, between the event badge and the Today's Progress card, add a section with id proteinRemainingSection
+2. It shows:
+   - If protein goal is met: green background, "🎯 Protein Goal Hit!" with checkmark
+   - If within 10% of goal: yellow/orange, "⚡ Almost There — Xg remaining"
+   - Otherwise: blue, "🏋️ Xg protein remaining" with a thin progress bar below
+3. The progress bar: 6px height, full width, rounded, blue fill, dark gray background, percentage width
+4. This section is updated in renderAll() (call a new function renderProteinRemaining())
+5. Style: padding 12px, border-radius 10px, margin-bottom 14px, font-size 0.9rem
+2.2 Weekly Protein Chart (Dashboard Card)
+1. Add a small card to the dashboard titled "📊 Protein This Week" (after the summary, before quote)
+2. Contains 7 bars (Mon-Sun) in a flex-row, height 70px, gap 3px
+3. Each bar: width 100%, border-radius 2px, min-height 2px
+4. Color logic based on that day's protein vs per-meal total target: <80% = #f85149 (red), 80-100% = #58a6ff (blue), >100% = #3fb950 (green)
+5. Below bars: day labels (M/T/W/T/F/S/S) in 0.6rem, gray
+6. Below labels: "Avg: 145g/day — 91% of goal" in 0.75rem, gray
+7. Get data from history object (each day's protein field)
+8. Create function renderProteinChart() called from renderAll()
+2.3 Animated Progress Rings (Replace Calorie + Protein Bars)
+1. In Today's Progress card, replace the first two progress bars (calories and protein) with SVG rings
+2. Each ring: 56px diameter, 5px stroke, viewBox="0 0 36 36"
+3. The track is a circle with stroke="#1c2333" (full circle)
+4. The progress is a circle with stroke-dasharray and stroke-dashoffset, using stroke-dashoffset animation on mount
+5. Center text: top line = current value (bold, 1rem), bottom line = goal value (0.7rem, gray)
+6. Calories ring: green (#3fb950), Protein ring: blue (#58a6ff)
+7. Animation: 0.8s ease-out transition for stroke-dashoffset
+8. Position: flex-row, centered, gap 20px
+9. Keep bars for carbs, fats, fiber below
+10. Title "Today's Progress" stays
+11. Create function renderProgressRings(t) called from renderProgress()
+2.4 Meal Prep Planner
+1. Add a button "📋 Plan Tomorrow" in the Log Meal modal, below the "Copy Yesterday" button, same styling
+2. On click: open a new modal (id planModal — add the modal HTML to the page)
+3. The plan modal has:
+   - Title "📋 Meal Prep Planner"
+   - 4 sections: Breakfast, Lunch, Dinner, Snack — each with:
+     - A text input for food name + quantity input + "+ Add" button
+     - Below each: a list of planned foods for that meal with remove (×) button and calories
+   - A "Save Plan" button → stores to localStorage under calTrack_plan as { date: '2026-05-16', meals: { Breakfast: [{ name: 'Oats', qty: 100, ... }], ... } }
+   - A "Close" button
+4. On the dashboard, if today has a plan: show a "📋 Today's Plan" card above the progress section with each meal and its planned foods, plus a "Log All" button per meal that adds all planned foods for that meal to today's entries
+5. Planned but unlogged items show with dotted border and slightly dimmed text
+6. When all planned items for a meal are logged, show a green checkmark next to that meal
+7. Create functions: openPlanModal(), savePlan(), loadPlan(), renderTodayPlan(), logPlannedMeal(mealType)
+2.5 Smart Time-of-Day Food Suggestions
+1. In the Log Meal modal, when the search input is empty and focused, show a row of 4 quick-add food buttons below the search input
+2. The 4 foods change based on current hour:
+   - 5-11am: Oats (100g), Eggs (2 whole), Greek Yogurt (200g), Banana (1 medium)
+   - 11am-2pm: Chicken Breast (150g), White Rice (200g), Broccoli (200g), Avocado (half)
+   - 2-5pm: Protein Shake (1 scoop), Almonds (30g), Cottage Cheese (200g), Rice Cakes (2)
+   - 5-10pm: Chicken Breast (200g), Brown Rice (200g), Sweet Potato (200g), Spinach (100g)
+   - 10pm-5am: Casein (1 scoop), Almond Milk (250ml), Peanut Butter (2 tbsp), Egg Whites (100g)
+3. Each button shows: food name + calories + protein
+4. On click: select the food, set its quantity, run updatePreview(), clear the suggestion row
+5. Style: inline-flex pills with dark background, 0.75rem font, small padding, gap 4px
+6. Create function renderTimeSuggestions() called when food search input is focused
+2.6 Verify
+- JS syntax valid
+- All existing features work
+- Rings animate on open
+Chunk 3: Polish & Power User Features
+Prompt for Chunk 3:
+Chunk 3: Polish & Power User — Backup, Shortcuts, Touch Gestures, Animations
+Apply to CalTrack.html. Preserve ALL existing features including Chunks 1 and 2.
+3.1 JSON Backup & Restore
+1. In Settings, below the existing buttons, add "💾 Backup Data" button
+2. On click: gather ALL calTrack_* keys from localStorage into one object, create a downloadable JSON file named caltrack_backup_{today}.json
+3. Also add "📂 Restore from Backup" button that opens a <input type="file" accept=".json"> picker, reads the file, validates it has calTrack_entries key, then calls localStorage.setItem() for each key and reloads the page
+4. Add a confirmation dialog before restore: "This will overwrite all current data. Continue?"
+5. Style: same as export-btn class
+3.2 Keyboard Shortcuts
+1. Add a global document.addEventListener('keydown', function(e) {...}) in init() that handles:
+   - Ctrl+K / Cmd+K → if meal modal is closed, open it and focus foodNameInput. If already open, focus foodNameInput
+   - Escape → close any open modal (loop through all .modal-overlay.open and close them)
+   - Ctrl+Enter → if food search has focus and a food is selected, submit the food form (trigger foodForm submit)
+   - Ctrl+S → if meal modal is open, save current as meal (trigger saveMealBtn click)
+2. Show a small hint at the bottom of the page: ⌨️ Ctrl+K search · Esc close — font 0.7rem, centered, gray, margin-top 20px
+3.3 Swipe-to-Close Modals (Mobile)
+1. For every .modal-overlay, add touch event listeners:
+   - touchstart: record start Y position in a data-start-y attribute
+   - touchmove: calculate delta Y, if positive (swiping down), translate the .modal-content by delta Y pixels (max 150px), apply transform: translateY(${delta}px) with transition: none
+   - touchend: if delta > 80px, close the modal with an animation (fast slide down, 0.15s). If less, snap back (translateY(0) with 0.2s ease transition)
+2. Add a visual drag handle to the top of each .modal-content:
+   - A div with class drag-handle inserted as first child: width 36px, height 4px, border-radius 2px, background #30363d, margin 0 auto 8px
+   - Only visible on touch devices (use @media (hover: none) and (pointer: coarse) or check 'ontouchstart' in window)
+3. Create function setupSwipeToClose() called from init()
+3.4 Smooth Animations & Transitions
+1. When a new food entry is added to the food log, briefly highlight it (green background flash for 1.5s then fade):
+   - When renderFoodLog() runs, check if a new entry was just added (compare count). If so, add class .new-entry to the last item
+   - CSS: .new-entry { animation: newEntryFlash 1.5s ease-out; }
+   - @keyframes newEntryFlash { 0% { background: rgba(63,185,80,0.2); } 100% { background: transparent; } }
+2. When a modal opens, the .modal-content should have a subtle scale animation (already has modalSlideUp, but improve it):
+   - @keyframes modalSlideUp { 0% { opacity: 0; transform: translateY(30px) scale(0.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+3. Summary numbers should pulse briefly when they change:
+   - When renderSummary() runs, track previous values. If calorie/protein count changed, add class .pulse to the value element
+   - CSS: .pulse { animation: valuePulse 0.4s ease; }
+   - @keyframes valuePulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+4. Progress bar fills should animate smoothly (they already have a 0.5s transition, ensure it's preserved)
+3.5 Add "Log All Remaining" Button (Dashboard)
+1. On the protein remaining header, when there's remaining protein, show a small link "Add high-protein foods →" that opens the meal modal
+2. In the plan card, each meal has a "Log All" button
+3.6 Keyboard Hint Footer
+1. Add after the quote card but before the modals: <div class="kb-hint">⌨️ Ctrl+K search · Esc close · 📱 Swipe down to close</div>
+2. CSS: .kb-hint { text-align: center; font-size: 0.7rem; color: #30363d; padding: 12px 0 4px; letter-spacing: 0.02em; }
+3. On mobile, the hint text changes to: 📱 Swipe down to close
+3.7 Final Checks
+1. Run node --check on extracted JS — must pass with zero errors
+2. Count opening and closing HTML tags — must be balanced
+3. File must end with </html>
+4. Test: open in browser, verify all modals open/close, food search works, barcode scanner initializes, data persists on refresh
