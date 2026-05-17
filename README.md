@@ -1,6 +1,6 @@
-# 🍽️ PlateSync
+# 🔥 Lav Calories
 
-**Offline-first PWA calorie and macro tracker** with 160+ Indian foods. No account, no ads, no cloud.
+**Offline-first PWA calorie and macro tracker** with 160+ Indian foods. No account, no ads, no cloud. Made by LAVYA.
 
 ## Features
 - 🏋️ Calorie, protein, carbs, fat, fiber tracking
@@ -18,7 +18,7 @@
 - 📱 PWA installable, fully offline
 
 ## Usage
-Open `PlateSync.html` in any browser, or visit the live site at [https://Lavya-builder.github.io/platesync/](https://Lavya-builder.github.io/platesync/)
+Open `LavCalories.html` in any browser, or visit the live site at [https://Lavya-builder.github.io/lav-calories/](https://Lavya-builder.github.io/lav-calories/)
 
 ## License
 MIT

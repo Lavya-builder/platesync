@@ -6,16 +6,16 @@
   <meta name="theme-color" content="#0d1117">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="PlateSync">
-  <title>PlateSync - Personal Calorie Tracker</title>
-  <meta name="description" content="PlateSync is a clean, smart calorie and macro tracker with a multi-cuisine food database.">
+  <meta name="apple-mobile-web-app-title" content="Lav Calories">
+  <title>Lav Calories - Personal Calorie Tracker</title>
+  <meta name="description" content="Lav Calories is a clean, smart calorie and macro tracker with a multi-cuisine food database.">
   <meta name="keywords" content="calorie tracker, Indian food calorie counter, macro tracker, offline PWA, nutrition tracker India, food diary, calorie logger">
   <!-- Open Graph -->
-  <meta property="og:title" content="PlateSync - Indian Food Calorie Tracker">
+  <meta property="og:title" content="Lav Calories - Indian Food Calorie Tracker">
   <meta property="og:description" content="Offline-first PWA calorie and macro tracker with 160+ Indian foods. No account, no ads, no cloud.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://Lavya-builder.github.io/platesync/">
-  <link rel="canonical" href="https://Lavya-builder.github.io/platesync/">
+  <meta property="og:url" content="https://Lavya-builder.github.io/lav-calories/">
+  <link rel="canonical" href="https://Lavya-builder.github.io/lav-calories/">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%230d1117%22 width=%22100%22 height=%22100%22 rx=%2220%22/><text y=%22.9em%22 font-size=%2280%22>🍽️</text></svg>">
   <link rel="manifest" id="manifestLink">
@@ -24,7 +24,7 @@
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "PlateSync",
+    "name": "Lav Calories",
     "applicationCategory": "HealthApplication",
     "operatingSystem": "Web",
     "description": "Offline-first PWA calorie and macro tracker with 160+ Indian foods.",
@@ -505,7 +505,7 @@
   <!-- DASHBOARD -->
   <header class="app-header">
     <div class="dash-date" id="dashDate"></div>
-    <h1>🥗 PlateSync</h1>
+    <h1>🔥 Lav Calories</h1>
     <p>Multi-Cuisine Calorie & Macro Tracker</p>
     <div style="font-size:0.7rem;color:#6e7681;margin-top:4px;">made by LAVYA</div>
   </header>
@@ -1134,23 +1134,23 @@
 
 
   /* -- Constants -- */
-  var LS_ENTRIES    = 'plateSync_entries';
-  var LS_GOAL       = 'plateSync_goal';
-  var LS_MACROS     = 'plateSync_macros';
-  var LS_HISTORY    = 'plateSync_history';
-  var LS_DATE       = 'plateSync_date';
-  var LS_FOOD_CACHE = 'plateSync_food_cache';
-  var LS_MEAL_TYPES = 'plateSync_meal_types';
-  var LS_WATER      = 'plateSync_water';
-  var LS_WATER_GOAL = 'plateSync_water_goal';
-  var LS_FAVORITES  = 'plateSync_favorites';
-  var LS_ADAPTIVE   = 'plateSync_adaptive';
-  var LS_EVENT      = 'plateSync_event';
-  var LS_BODY       = 'plateSync_body';
-  var LS_SAVED_MEALS= 'plateSync_saved_meals';
-  var LS_MEAL_TARGETS='plateSync_meal_targets';
-  var LS_CUSTOM_FOODS='plateSync_custom_foods';
-  var LS_COMPACT    = 'plateSync_compact';
+  var LS_ENTRIES    = 'lavCalories_entries';
+  var LS_GOAL       = 'lavCalories_goal';
+  var LS_MACROS     = 'lavCalories_macros';
+  var LS_HISTORY    = 'lavCalories_history';
+  var LS_DATE       = 'lavCalories_date';
+  var LS_FOOD_CACHE = 'lavCalories_food_cache';
+  var LS_MEAL_TYPES = 'lavCalories_meal_types';
+  var LS_WATER      = 'lavCalories_water';
+  var LS_WATER_GOAL = 'lavCalories_water_goal';
+  var LS_FAVORITES  = 'lavCalories_favorites';
+  var LS_ADAPTIVE   = 'lavCalories_adaptive';
+  var LS_EVENT      = 'lavCalories_event';
+  var LS_BODY       = 'lavCalories_body';
+  var LS_SAVED_MEALS= 'lavCalories_saved_meals';
+  var LS_MEAL_TARGETS='lavCalories_meal_targets';
+  var LS_CUSTOM_FOODS='lavCalories_custom_foods';
+  var LS_COMPACT    = 'lavCalories_compact';
 
   /* -- DOM References -- */
   var goalInput       = document.getElementById('goalInput');
@@ -1753,21 +1753,21 @@
     return { calories: calcCalories(p, c, f), protein: p, carbs: c, fats: f, fiber: fb };
   }
 
-  /* —— Storage Migration (from calTrack_ to plateSync_) —— */
+  /* —— Storage Migration (calTrack_ → plateSync_ → lavCalories_) —— */
   function migrateStorage() {
-    var oldPrefix = 'calTrack_';
-    var newPrefix = 'plateSync_';
     var keys = ['entries','goal','macros','history','date','food_cache','meal_types','water','water_goal','favorites','adaptive','event','body','saved_meals','meal_targets','custom_foods','compact','plan'];
-    var migrated = false;
     keys.forEach(function(k) {
-      var old = localStorage.getItem(oldPrefix + k);
-      if (old !== null) {
-        localStorage.setItem(newPrefix + k, old);
-        localStorage.removeItem(oldPrefix + k);
-        migrated = true;
+      var oldCal = localStorage.getItem('calTrack_' + k);
+      if (oldCal !== null) {
+        localStorage.setItem('lavCalories_' + k, oldCal);
+        localStorage.removeItem('calTrack_' + k);
+      }
+      var oldPS = localStorage.getItem('plateSync_' + k);
+      if (oldPS !== null) {
+        localStorage.setItem('lavCalories_' + k, oldPS);
+        localStorage.removeItem('plateSync_' + k);
       }
     });
-    return migrated;
   }
 
   /* —— localStorage I/O —— */
@@ -2363,7 +2363,7 @@
     var blob = new Blob([csv], { type: 'text/csv' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
-    a.href = url; a.download = 'platesync_export_' + todayStr() + '.csv';
+    a.href = url; a.download = 'lav_calories_export_' + todayStr() + '.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
@@ -2574,7 +2574,7 @@
   }
 
   /* —— Meal Prep Planner —— */
-  var LS_PLAN = 'plateSync_plan';
+  var LS_PLAN = 'lavCalories_plan';
   var mealPlan = null;
   var planData = { Breakfast: [], Lunch: [], Dinner: [], Snack: [] };
   function loadPlan() {
@@ -2701,7 +2701,7 @@
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'platesync_backup_' + todayStr() + '.json';
+    a.download = 'lav_calories_backup_' + todayStr() + '.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -2834,8 +2834,8 @@
   /* —— PWA Manifest —— */
   function setupPWA() {
     var manifest = {
-      name: 'PlateSync - Calorie & Macro Tracker',
-      short_name: 'PlateSync',
+      name: 'Lav Calories - Calorie & Macro Tracker',
+      short_name: 'LavCalories',
       description: 'Track meals, macros, and body stats. Offline-first, privacy-focused.',
       start_url: '.',
       display: 'standalone',
