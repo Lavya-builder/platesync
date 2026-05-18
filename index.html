@@ -1622,14 +1622,8 @@
     } catch(e) { entries=[]; dailyGoal=2000; macroGoals={protein:75,carbs:250,fats:65,fiber:25}; history={}; }
     loadWater(); loadFavorites(); loadAdaptive();
   }
-  var _dirty = false;
   function saveEntries() {
-    if (_dirty) return;
-    _dirty = true;
-    requestAnimationFrame(function() {
-      _dirty = false;
-      try { localStorage.setItem(LS_ENTRIES, JSON.stringify(entries)); } catch(e) {}
-    });
+    try { localStorage.setItem(LS_ENTRIES, JSON.stringify(entries)); } catch(e) {}
   }
   function flushStorage() {
     try { localStorage.setItem(LS_ENTRIES, JSON.stringify(entries)); } catch(e) {}
@@ -1637,6 +1631,124 @@
   window.addEventListener('beforeunload', flushStorage);
   function saveGoal() { localStorage.setItem(LS_GOAL, String(dailyGoal)); localStorage.setItem(LS_MACROS, JSON.stringify(macroGoals)); }
   function saveHistory() { localStorage.setItem(LS_HISTORY, JSON.stringify(history)); }
+
+  /* —— Water —— */
+  function loadWater() {
+    try { var r = localStorage.getItem(LS_WATER); if (r) { var p = JSON.parse(r); waterIntake = p[todayStr()] || 0; } } catch(e) { waterIntake = 0; }
+    try { var rg = localStorage.getItem(LS_WATER_GOAL); if (rg) waterGoal = parseInt(rg, 10); } catch(e) { waterGoal = 2000; }
+  }
+  function saveWater() {
+    try {
+      var all = {};
+      var r = localStorage.getItem(LS_WATER);
+      if (r) all = JSON.parse(r);
+      all[todayStr()] = waterIntake;
+      localStorage.setItem(LS_WATER, JSON.stringify(all));
+    } catch(e) {}
+  }
+  function saveWaterGoal() { try { localStorage.setItem(LS_WATER_GOAL, String(waterGoal)); } catch(e) {} }
+  function addWater(amount) { waterIntake += amount; saveWater(); updateWaterProgress(); }
+  function resetWater() { waterIntake = 0; saveWater(); updateWaterProgress(); }
+  function updateWaterProgress() {
+    var pct = waterGoal > 0 ? Math.min((waterIntake / waterGoal) * 100, 100) : 0;
+    waterDisplay.textContent = waterIntake + ' / ' + waterGoal + ' ml';
+    waterBarFill.style.width = pct + '%';
+    waterBarFill.className = 'water-bar-fill' + (pct >= 100 ? ' over' : '');
+    waterGoalInput.value = waterGoal;
+  }
+  function archiveWater(ds) {
+    try {
+      var all = {};
+      var r = localStorage.getItem(LS_WATER);
+      if (r) all = JSON.parse(r);
+      if (!all[ds]) all[ds] = waterIntake;
+      localStorage.setItem(LS_WATER, JSON.stringify(all));
+    } catch(e) {}
+  }
+
+  /* —— Favorites —— */
+  function loadFavorites() { try { var r = localStorage.getItem(LS_FAVORITES); if (r) favorites = JSON.parse(r); } catch(e) { favorites = []; } }
+  function saveFavorites() { try { localStorage.setItem(LS_FAVORITES, JSON.stringify(favorites)); } catch(e) {} }
+  function isFavorite(foodName) { for (var i = 0; i < favorites.length; i++) { if (favorites[i].name.toLowerCase() === foodName.trim().toLowerCase()) return true; } return false; }
+  function toggleFavorite(food) {
+    var key = food.name.trim().toLowerCase();
+    for (var i = 0; i < favorites.length; i++) {
+      if (favorites[i].name.toLowerCase() === key) { favorites.splice(i, 1); saveFavorites(); updateFavStar(); return; }
+    }
+    favorites.push({ name: food.name, protein: food.protein, carbs: food.carbs, fats: food.fats, fiber: food.fiber });
+    saveFavorites();
+    updateFavStar();
+  }
+  function updateFavStar() {
+    if (selectedFood) {
+      favToggleBtn.style.display = '';
+      favToggleBtn.textContent = isFavorite(selectedFood.name) ? '\u2605' : '\u2606';
+      favToggleBtn.className = 'fav-star' + (isFavorite(selectedFood.name) ? ' active' : '');
+    } else { favToggleBtn.style.display = 'none'; }
+  }
+  function renderFavList() {
+    if (!favorites.length) { favList.classList.remove('open'); favList.innerHTML = ''; return; }
+    var html = '<div class="fl-title">\u2b50 Favorites</div>';
+    favorites.forEach(function(f, i) {
+      html += '<span class="fl-item" data-fav-idx="' + i + '">' + escapeHtml(f.name) + '<span class="fl-item-del" data-fav-del="' + i + '"> \u00d7</span></span>';
+    });
+    favList.innerHTML = html;
+    favList.querySelectorAll('.fl-item[data-fav-idx]').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        if (e.target.classList.contains('fl-item-del')) return;
+        var idx = parseInt(el.getAttribute('data-fav-idx'), 10);
+        if (idx >= 0 && idx < favorites.length) {
+          var f = favorites[idx];
+          foodNameInput.value = f.name;
+          selectedFood = f;
+          hideSearchResults();
+          favList.classList.remove('open');
+          updatePreview();
+          validateForm();
+        }
+      });
+    });
+    favList.querySelectorAll('.fl-item-del').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var idx = parseInt(el.getAttribute('data-fav-del'), 10);
+        if (idx >= 0 && idx < favorites.length) { favorites.splice(idx, 1); saveFavorites(); renderFavList(); }
+      });
+    });
+  }
+  function showFavList() { if (favorites.length > 0) { renderFavList(); favList.classList.add('open'); } }
+  function hideFavList() { favList.classList.remove('open'); }
+
+  /* —— Smart Macro Adjustments —— */
+  function loadAdaptive() { try { var r = localStorage.getItem(LS_ADAPTIVE); adaptiveEnabled = r === 'true'; if (adaptiveToggle) adaptiveToggle.checked = adaptiveEnabled; } catch(e) { adaptiveEnabled = false; } }
+  function saveAdaptive() { try { localStorage.setItem(LS_ADAPTIVE, String(adaptiveEnabled)); } catch(e) {} }
+  function hasSufficientHistory() { var c = 0; for (var k in history) { if (history.hasOwnProperty(k) && history[k].total > 0) c++; } return c >= 3; }
+  function applySmartAdjustments() {
+    if (!adaptiveEnabled) { adaptiveInfo.textContent = 'Adaptive goals are disabled. Toggle on to enable auto-adjustments.'; return; }
+    if (!hasSufficientHistory()) { adaptiveInfo.textContent = 'Need at least 3 days of tracking data before auto-adjusting goals.'; return; }
+    var dates = Object.keys(history).sort().reverse().slice(0, 5);
+    if (dates.length < 3) { adaptiveInfo.textContent = 'Not enough recent data. Keep tracking!'; return; }
+    var totalCals = 0, count = 0;
+    dates.forEach(function(d) { totalCals += history[d].total || 0; count++; });
+    var avgCals = totalCals / count;
+    var diff = avgCals - dailyGoal;
+    var adjust = 0;
+    if (Math.abs(diff) > 100) adjust = round(diff * 0.3, 0);
+    adjust = Math.max(-dailyGoal * 0.1, Math.min(dailyGoal * 0.1, adjust));
+    var newGoal = dailyGoal + adjust;
+    if (newGoal < 300) newGoal = 300;
+    if (newGoal > 10000) newGoal = 10000;
+    var oldGoal = dailyGoal;
+    if (Math.abs(adjust) >= 30) {
+      dailyGoal = round(newGoal, 0);
+      goalInput.value = dailyGoal;
+      saveGoal();
+      renderAll();
+      adaptiveInfo.textContent = 'Goal auto-adjusted from ' + oldGoal + ' to ' + dailyGoal + ' kcal (based on ' + count + ' day avg of ' + round(avgCals,0) + ' kcal).';
+    } else {
+      adaptiveInfo.textContent = 'Data stable. Current goal of ' + dailyGoal + ' kcal maintained (avg ' + round(avgCals,0) + ' kcal over ' + count + ' days).';
+    }
+  }
 
   /* —— Day Change —— */
   function checkDayChange() {
@@ -1705,10 +1817,11 @@
   }
 
   /* —— CRUD —— */
-  function addEntry(foodName, qty, mealType, nut) {
-    entries.push({id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),foodName:foodName,quantity:qty,mealType:mealType,date:todayStr(),timestamp:Date.now(),calories:nut.calories,protein:nut.protein,carbs:nut.carbs,fats:nut.fats,fiber:nut.fiber});
+  function addEntry(foodName, qty, mealType, nut, date) {
+    date = date || viewDate;
+    entries.push({id:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6),foodName:foodName,quantity:qty,mealType:mealType,date:date,timestamp:Date.now(),calories:nut.calories,protein:nut.protein,carbs:nut.carbs,fats:nut.fats,fiber:nut.fiber});
     saveEntries();
-    setViewDate(todayStr());
+    setViewDate(date);
   }
   function deleteEntry(id) { entries = entries.filter(function(e){return e.id!==id;}); saveEntries(); renderAll(); }
   function editEntry(id) {
@@ -1757,7 +1870,6 @@
       eventBadge.style.display = 'block';
       eventBadgeText.textContent = eventBuffer.calories + ' kcal for ' + escapeHtml(eventBuffer.label);
     } else { eventBadge.style.display = 'none'; }
-    renderAll();
   }
   function updateEventStatus() {
     if (eventBuffer.active && eventBuffer.date === todayStr()) {
@@ -1780,19 +1892,20 @@
     saveEventBuffer();
     updateEventStatus();
     updateEventBadge();
+    renderAll();
   }
   function clearEventBuffer() {
     eventBuffer = { active: false, label: '', calories: 0, date: '' };
     saveEventBuffer();
     updateEventStatus();
     updateEventBadge();
+    renderAll();
   }
 
   /* —— Barcode Scanner —— */
   var scannerStream = null;
   var scannerInterval = null;
   var scannerDetectTimeout = null;
-  var scannerEmptyCount = 0;
   function openScanner() {
     var overlay = document.getElementById('scannerOverlay');
     if (overlay) openModal('scannerOverlay');
@@ -2032,7 +2145,6 @@
     searchTimer = setTimeout(function() {
       searchFoods(query, function(err, results) {
         if (results && results.length > 0) showSearchResults(results, false);
-        else if (err) showSearchResults(null, true);
         else { searchResults.innerHTML = '<div class="sr-none">No foods found. Try a different search term.</div>'; searchResults.classList.add('open'); searchOpen = true; }
       });
     }, 400);
@@ -2256,15 +2368,16 @@
   function getProteinStreak() {
     var dates = Object.keys(history).sort().reverse();
     var streak = 0;
+    var mealTargetTotal = mealTargets.Breakfast + mealTargets.Lunch + mealTargets.Dinner + mealTargets.Snack;
+    var proteinGoal = mealTargetTotal > 0 ? mealTargetTotal : macroGoals.protein;
     for (var i = 0; i < dates.length; i++) {
       var h = history[dates[i]];
-      if (h.protein >= (mealTargets.Dinner > 0 ? mealTargets.Breakfast + mealTargets.Lunch + mealTargets.Dinner + mealTargets.Snack : macroGoals.protein)) streak++;
+      if (h.protein >= proteinGoal) streak++;
       else break;
     }
     var todayEntries = getTodayEntries();
     var todayP = getTotals(todayEntries).protein;
-    var todayGoal = mealTargets.Dinner > 0 ? mealTargets.Breakfast + mealTargets.Lunch + mealTargets.Dinner + mealTargets.Snack : macroGoals.protein;
-    if (todayP >= todayGoal) streak++;
+    if (todayP >= proteinGoal) streak++;
     return streak;
   }
 
@@ -2330,12 +2443,15 @@
   /* —— Animated Progress Rings —— */
   function renderProgressRings(t) {
     var circumference = 2 * Math.PI * 14;
-    var calPct = dailyGoal > 0 ? Math.min(t.calories / dailyGoal, 1) : 0;
+    var eventCals = eventBuffer && eventBuffer.active && eventBuffer.date === todayStr() ? eventBuffer.calories : 0;
+    var adjustedGoal = dailyGoal - eventCals;
+    var displayGoal = adjustedGoal > 0 ? adjustedGoal : dailyGoal;
+    var calPct = displayGoal > 0 ? Math.min(t.calories / displayGoal, 1) : 0;
     var proPct = macroGoals.protein > 0 ? Math.min(t.protein / macroGoals.protein, 1) : 0;
     var calOffset = circumference * (1 - calPct);
     var proOffset = circumference * (1 - proPct);
     var h = '<div class="progress-rings">';
-    h += '<div class="progress-ring-wrap"><svg viewBox="0 0 36 36"><circle class="ring-track" cx="18" cy="18" r="14"/><circle class="ring-progress" cx="18" cy="18" r="14" stroke="#3fb950" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + calOffset + '"/></svg><div class="ring-text"><span class="ring-current">' + t.calories + '</span><span class="ring-goal">' + dailyGoal + '</span></div></div>';
+    h += '<div class="progress-ring-wrap"><svg viewBox="0 0 36 36"><circle class="ring-track" cx="18" cy="18" r="14"/><circle class="ring-progress" cx="18" cy="18" r="14" stroke="#3fb950" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + calOffset + '"/></svg><div class="ring-text"><span class="ring-current">' + t.calories + '</span><span class="ring-goal">' + displayGoal + '</span></div></div>';
     h += '<div class="progress-ring-wrap"><svg viewBox="0 0 36 36"><circle class="ring-track" cx="18" cy="18" r="14"/><circle class="ring-progress" cx="18" cy="18" r="14" stroke="#58a6ff" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + proOffset + '"/></svg><div class="ring-text"><span class="ring-current">' + t.protein + 'g</span><span class="ring-goal">' + macroGoals.protein + 'g</span></div></div>';
     h += '</div>';
     return h;
@@ -2530,10 +2646,14 @@
   /* —— JSON Backup & Restore —— */
   function backupData() {
     var data = {};
+    var prefixes = ['lavCalories_', 'calTrack_', 'plateSync_'];
     for (var i = 0; i < localStorage.length; i++) {
       var key = localStorage.key(i);
-      if (key.indexOf('calTrack_') === 0) {
-        data[key] = localStorage.getItem(key);
+      for (var p = 0; p < prefixes.length; p++) {
+        if (key.indexOf(prefixes[p]) === 0) {
+          data[key] = localStorage.getItem(key);
+          break;
+        }
       }
     }
     var json = JSON.stringify(data, null, 2);
@@ -2553,9 +2673,12 @@
     reader.onload = function(e) {
       try {
         var data = JSON.parse(e.target.result);
-        if (!data.calTrack_entries) { alert('Invalid backup file. Missing calTrack_entries.'); return; }
+        var hasValidKey = Object.keys(data).some(function(k) {
+          return k.indexOf('lavCalories_') === 0 || k.indexOf('calTrack_') === 0;
+        });
+        if (!hasValidKey) { alert('Invalid backup file. No app data found.'); return; }
         for (var key in data) {
-          if (data.hasOwnProperty(key) && key.indexOf('calTrack_') === 0) {
+          if (data.hasOwnProperty(key) && (key.indexOf('lavCalories_') === 0 || key.indexOf('calTrack_') === 0 || key.indexOf('plateSync_') === 0)) {
             localStorage.setItem(key, data[key]);
           }
         }
@@ -2796,7 +2919,7 @@
       if (!qty || qty < 1 || !meal) return;
       var grams = convertToGrams(qty, unit);
       var nutrition = calculateNutrition(selectedFood, grams);
-      addEntry(selectedFood.name, grams, meal, nutrition);
+      addEntry(selectedFood.name, grams, meal, nutrition, viewDate);
       addMealType(meal);
       renderMealSuggestions();
       foodNameInput.value = '';
