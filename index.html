@@ -133,27 +133,9 @@
     .action-btn:active { transform: scale(0.97); }
     .action-btn .action-icon { font-size: 1.6rem; line-height: 1; }
     .action-btn .action-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
-    .quote-card { text-align: center; padding: 12px 16px; margin-bottom: 18px; background: #161b22; border-radius: 12px; }
-    .quote-card .quote-text { font-size: 0.85rem; font-style: italic; color: #8b949e; }
-    .quote-card .quote-author { font-size: 0.72rem; color: #6e7681; margin-top: 2px; }
-    .diet-form { display: flex; flex-direction: column; gap: 12px; }
-    .diet-form .form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .diet-form .form-row input { flex: 1; min-width: 80px; padding: 10px 12px; border: 1.5px solid #30363d; border-radius: 8px; font-size: 0.9rem; background: #0d1117; color: #e6edf3; outline: none; }
-    .diet-form .form-row input:focus { border-color: #3fb950; box-shadow: 0 0 0 3px rgba(63,185,80,0.15); }
-    .diet-form .form-row select { padding: 10px 8px; border: 1.5px solid #30363d; border-radius: 8px; font-size: 0.85rem; background: #0d1117; color: #e6edf3; outline: none; cursor: pointer; }
-    .diet-form .form-row button { padding: 10px 18px; background: #58a6ff; color: #0d1117; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .diet-form .form-row button:hover { background: #3b8bdb; }
-    .rec-result { background: #1c2333; border-radius: 10px; padding: 14px; margin-top: 4px; }
-    .rec-result .rec-bmi { font-size: 1.05rem; font-weight: 700; color: #e6edf3; margin-bottom: 10px; }
-    .rec-result .rec-bmi .bmi-safe { color: #3fb950; }
-    .rec-result .rec-bmi .bmi-warn { color: #d29922; }
-    .rec-result .rec-bmi .bmi-danger { color: #f85149; }
-    .rec-result .rec-macros-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .rec-result .rec-macro-item { padding: 8px; background: #161b22; border-radius: 6px; text-align: center; }
-    .rec-result .rec-macro-item .rm-label { font-size: 0.7rem; text-transform: uppercase; color: #8b949e; }
-    .rec-result .rec-macro-item .rm-value { font-size: 1rem; font-weight: 700; color: #e6edf3; }
-    .rec-result .rec-macro-item .rm-unit { font-size: 0.72rem; color: #8b949e; }
-    .rec-note { font-size: 0.78rem; color: #8b949e; text-align: center; margin-top: 10px; }
+    .serving-wrap { max-width: 140px; flex: 0 0 auto; }
+    .serving-wrap select { padding: 10px 8px; border: 1.5px solid #30363d; border-radius: 8px; font-size: 0.85rem; background: #0d1117; color: #e6edf3; outline: none; cursor: pointer; width: 100%; }
+    .serving-wrap select:focus { border-color: #3fb950; box-shadow: 0 0 0 3px rgba(63,185,80,0.15); }
     .food-form { display: flex; flex-direction: column; gap: 12px; }
     .food-form .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .food-form .form-row > * { flex: 1; min-width: 0; }
@@ -343,9 +325,8 @@
       .food-form .qty-wrap { max-width: 80px; }
       .food-form .form-row { flex-direction: column; }
       .food-form .form-row .qty-wrap { max-width: 100%; }
+      .serving-wrap { max-width: 100%; }
       .search-results { max-height: 300px; }
-      .diet-form .form-row { flex-direction: column; }
-      .diet-form .form-row input { min-width: 100%; }
     }
     .protein-hero { text-align: center; padding: 16px 12px; background: linear-gradient(135deg, rgba(88,166,255,0.12), rgba(88,166,255,0.04)); border-radius: 14px; margin-bottom: 14px; border: 1px solid rgba(88,166,255,0.2); }
     .protein-hero .ph-value { font-size: 2.4rem; font-weight: 800; color: #58a6ff; line-height: 1; }
@@ -509,7 +490,19 @@
     <h1>🔥 Lav Calories</h1>
     <p>Multi-Cuisine Calorie & Macro Tracker</p>
     <div style="font-size:0.7rem;color:#6e7681;margin-top:4px;">made by LAVYA</div>
+    <div id="headerQuote" style="font-size:0.75rem;font-style:italic;color:#6e7681;margin-top:6px;"></div>
   </header>
+
+  <div id="caloriesTopCard" style="background:#161b22;border:1.5px solid #30363d;border-radius:14px;padding:16px 20px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+      <span style="font-size:1.3rem;">⚙️</span>
+      <div style="min-width:0;">
+        <div style="font-size:0.88rem;font-weight:600;color:#e6edf3;">Set Calories & Macros</div>
+        <div id="caloriesTopCardSub" style="font-size:0.75rem;color:#d29922;margin-top:2px;">⚠️ Recommended to do first before anything</div>
+      </div>
+    </div>
+    <button id="caloriesTopCardBtn" style="padding:8px 18px;background:#3fb950;color:#0d1117;border:none;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">Open</button>
+  </div>
 
   <div id="dateNavBar" style="display:flex;align-items:center;gap:8px;padding:8px 0;margin-bottom:10px;flex-wrap:wrap;">
     <button id="datePrevBtn" style="padding:6px 12px;background:#1c2333;border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-size:1rem;cursor:pointer;">&larr;</button>
@@ -544,17 +537,9 @@
       <span class="action-icon">💪</span>
       <span class="action-label">Body Stats</span>
     </button>
-    <button class="action-btn" data-modal="settingsModal" style="border-color:#8b949e;">
-      <span class="action-icon">⚙️</span>
-      <span class="action-label">Set Calories & Macros</span>
-    </button>
     <button class="action-btn" id="barcodeScanBtn" style="border-color:#3fb950;">
       <span class="action-icon">📷</span>
       <span class="action-label">Scan Barcode</span>
-    </button>
-    <button class="action-btn" id="toggleDietBtn" style="border-color:#7ee787;">
-      <span class="action-icon">🥗</span>
-      <span class="action-label">Diet Rec</span>
     </button>
   </section>
 
@@ -581,35 +566,7 @@
     <div id="proteinChart"></div>
   </section>
 
-  <div class="quote-card">
-    <div class="quote-text" id="quoteText">"The only bad workout is the one that didn't happen."</div>
-    <div class="quote-author" id="quoteAuthor">— Unknown</div>
-  </div>
-
-  <div class="kb-hint" id="kbHint">⌨️ Ctrl+K search · Esc close · 📱 Swipe down to close</div>
-
-
-  <section class="card" id="dietSection" style="display:none;" aria-label="Diet Recommendations">
-    <div class="card-title">🥗 Diet Recommendations</div>
-    <div class="diet-form">
-      <div class="form-row">
-        <input type="number" id="weightInput" placeholder="Weight" min="1" step="0.1">
-        <select id="weightUnit">
-          <option value="kg">kg</option>
-          <option value="lbs">lbs</option>
-        </select>
-        <input type="number" id="heightInput" placeholder="Height" min="1" step="0.1">
-        <select id="heightUnit">
-          <option value="cm">cm</option>
-          <option value="ft">ft</option>
-          <option value="in">in</option>
-        </select>
-        <button id="calcRecommendBtn">Calculate</button>
-      </div>
-      <div id="recommendationResult" class="rec-result" style="display:none;"></div>
-      <div class="rec-note">These are suggestions based on your inputs. You can set your own goals above.</div>
-    </div>
-  </section>
+  <div class="kb-hint" id="kbHint">⌨️ Ctrl+K search · Esc close</div>
 </div>
 
 <!-- MODAL: LOG MEAL -->
@@ -634,6 +591,11 @@
           <input type="text" id="foodNameInput" placeholder="Search food (e.g. Idli, Roti, Guava)" required>
           <div class="search-results" id="searchResults"></div>
           <div class="fav-list" id="favList"></div>
+        </div>
+        <div class="serving-wrap" id="servingWrap" style="display:none;">
+          <select id="servingSelect">
+            <option value="">Serving</option>
+          </select>
         </div>
         <div class="qty-wrap">
           <input type="number" id="foodQtyInput" placeholder="qty" min="1" value="100" required>
@@ -997,6 +959,7 @@
     { name: 'Almonds',                          protein: 21,  carbs: 22,  fats: 50,  fiber: 12.5 },
     { name: 'Peanut Butter (2 tbsp, 32g)',      protein: 8,   carbs: 6,   fats: 16,  fiber: 2 },
     { name: 'Peanut Butter',                    protein: 25,  carbs: 20,  fats: 50,  fiber: 6 },
+    { name: 'Peanut (raw)',                     protein: 25,  carbs: 16,  fats: 48,  fiber: 8 },
     { name: 'Rice Cakes (2 cakes)',             protein: 2,   carbs: 14,  fats: 0.5, fiber: 0.5 },
     { name: 'Quest Protein Bar',                protein: 20,  carbs: 22,  fats: 8,   fiber: 14 },
     { name: 'Milk (whole, 3.25%)',              protein: 3.2, carbs: 4.8, fats: 3.3, fiber: 0 },
@@ -1133,6 +1096,67 @@
     { name: 'Biryani / Vegetable (1 plate)',     protein: 5,   carbs: 35,  fats: 5,   fiber: 2 }
   ];
 
+  /* -- Food Serving Definitions -- */
+  var FOOD_SERVINGS = {
+    "banana": [
+      { label: "1 small (90g)", qty: 90 },
+      { label: "1 medium (118g)", qty: 118 },
+      { label: "1 large (136g)", qty: 136 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "egg": [
+      { label: "1 egg (50g)", qty: 50 },
+      { label: "2 eggs (100g)", qty: 100 },
+      { label: "3 eggs (150g)", qty: 150 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "chapati": [
+      { label: "1 chapati (30g)", qty: 30 },
+      { label: "2 chapatis (60g)", qty: 60 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "roti": [
+      { label: "1 roti (35g)", qty: 35 },
+      { label: "2 roti (70g)", qty: 70 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "paratha": [
+      { label: "1 paratha (60g)", qty: 60 },
+      { label: "2 paratha (120g)", qty: 120 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "dosa": [
+      { label: "1 dosa (80g)", qty: 80 },
+      { label: "2 dosa (160g)", qty: 160 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "idli": [
+      { label: "1 idli (40g)", qty: 40 },
+      { label: "2 idli (80g)", qty: 80 },
+      { label: "3 idli (120g)", qty: 120 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "samosa": [
+      { label: "1 samosa (50g)", qty: 50 },
+      { label: "2 samosa (100g)", qty: 100 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "vada": [
+      { label: "1 vada (35g)", qty: 35 },
+      { label: "2 vada (70g)", qty: 70 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "poori": [
+      { label: "1 poori (25g)", qty: 25 },
+      { label: "2 poori (50g)", qty: 50 },
+      { label: "Custom (g)", qty: null }
+    ],
+    "bread slice": [
+      { label: "1 slice (25g)", qty: 25 },
+      { label: "2 slices (50g)", qty: 50 },
+      { label: "Custom (g)", qty: null }
+    ]
+  };
 
   /* -- Constants -- */
   var LS_ENTRIES    = 'lavCalories_entries';
@@ -1174,14 +1198,12 @@
   var clearTodayBtn   = document.getElementById('clearTodayBtn');
   var historyList     = document.getElementById('historyList');
   var foodQtyUnit     = document.getElementById('foodQtyUnit');
-  var quoteText       = document.getElementById('quoteText');
-  var quoteAuthor     = document.getElementById('quoteAuthor');
-  var weightInput     = document.getElementById('weightInput');
-  var weightUnit      = document.getElementById('weightUnit');
-  var heightInput     = document.getElementById('heightInput');
-  var heightUnit      = document.getElementById('heightUnit');
-  var calcRecommendBtn= document.getElementById('calcRecommendBtn');
-  var recommendationResult = document.getElementById('recommendationResult');
+  var servingWrap     = document.getElementById('servingWrap');
+  var servingSelect   = document.getElementById('servingSelect');
+  var headerQuote     = document.getElementById('headerQuote');
+  var caloriesTopCard = document.getElementById('caloriesTopCard');
+  var caloriesTopCardSub = document.getElementById('caloriesTopCardSub');
+  var caloriesTopCardBtn = document.getElementById('caloriesTopCardBtn');
   var waterGoalInput  = document.getElementById('waterGoalInput');
   var waterDisplay    = document.getElementById('waterDisplay');
   var waterBarFill    = document.getElementById('waterBarFill');
@@ -1200,8 +1222,6 @@
   var eventStartBtn   = document.getElementById('eventStartBtn');
   var eventStopBtn    = document.getElementById('eventStopBtn');
   var eventStatus     = document.getElementById('eventStatus');
-  var toggleDietBtn    = document.getElementById('toggleDietBtn');
-  var dietSection      = document.getElementById('dietSection');
   var bodyWeightInput  = document.getElementById('bodyWeightInput');
   var bodyFatInput     = document.getElementById('bodyFatInput');
   var bodyWaistInput   = document.getElementById('bodyWaistInput');
@@ -1300,248 +1320,20 @@
   function displayQuote() {
     var idx = Math.floor(Math.random() * QUOTES.length);
     var q = QUOTES[idx];
-    quoteText.textContent = '"' + q.text + '"';
-    quoteAuthor.textContent = '\u2014 ' + q.author;
+    if (headerQuote) headerQuote.textContent = '"' + q.text + '" \u2014 ' + q.author;
   }
 
-  function calculateDietRecommendations() {
-    if (!weightInput || !heightInput || !weightUnit || !heightUnit || !recommendationResult) return;
-    var w = parseFloat(weightInput.value);
-    var h = parseFloat(heightInput.value);
-    var wUnit = weightUnit.value;
-    var hUnit = heightUnit.value;
-    if (!w || !h || w <= 0 || h <= 0) { recommendationResult.style.display = 'none'; return; }
-    var weightKg = wUnit === 'lbs' ? w * 0.453592 : w;
-    var heightCm = hUnit === 'ft' ? h * 30.48 : (hUnit === 'in' ? h * 2.54 : h);
-    var heightM = heightCm / 100;
-    var bmi = round(weightKg / (heightM * heightM), 1);
-    var bmiCat = '', bmiCls = '';
-    if (bmi < 18.5) { bmiCat = 'Underweight'; bmiCls = 'bmi-warn'; }
-    else if (bmi < 25) { bmiCat = 'Normal weight'; bmiCls = 'bmi-safe'; }
-    else if (bmi < 30) { bmiCat = 'Overweight'; bmiCls = 'bmi-warn'; }
-    else { bmiCat = 'Obese'; bmiCls = 'bmi-danger'; }
-    var bmr = 10 * weightKg + 6.25 * heightCm - 5 * 30 + 5;
-    var activityFactor = 1.35;
-    var tdee = round(bmr * activityFactor, 0);
-    if (bmi < 18.5) tdee = round(tdee * 1.1, 0);
-    else if (bmi > 25 && bmi < 30) tdee = round(tdee * 0.9, 0);
-    else if (bmi >= 30) tdee = round(tdee * 0.8, 0);
-    var proteinMin = round(weightKg * 1.6, 1);
-    var proteinMax = round(weightKg * 2.0, 1);
-    var proteinRec = round((proteinMin + proteinMax) / 2, 1);
-    var fiberMin = 25;
-    var fiberFromCal = round(tdee / 1000 * 10, 1);
-    var fiberRec = Math.max(fiberMin, fiberFromCal);
-    var fatMin = round(weightKg * 0.9, 1);
-    var fatMax = round(weightKg * 1.3, 1);
-    var fatRec = round((fatMin + fatMax) / 2, 1);
-    var proteinCals = proteinRec * 4;
-    var fatCals = fatRec * 9;
-    var fiberCals = fiberRec * 2;
-    var remainingCals = tdee - proteinCals - fatCals - fiberCals;
-    var carbRec = round(Math.max(remainingCals / 4, weightKg * 3), 0);
-    var carbMin = round(weightKg * 3, 0);
-    var carbMax = round(weightKg * 5, 0);
-    recommendationResult.style.display = 'block';
-    recommendationResult.innerHTML =
-      '<div class="rec-bmi">BMI: <span class="' + bmiCls + '">' + bmi + '</span> — ' + bmiCat + '</div>' +
-      '<div class="rec-macros-grid">' +
-        '<div class="rec-macro-item"><div class="rm-label">Calories</div><div class="rm-value">' + tdee + '</div><div class="rm-unit">kcal/day</div></div>' +
-        '<div class="rec-macro-item"><div class="rm-label">Protein</div><div class="rm-value">' + proteinRec + '</div><div class="rm-unit">g/day (' + proteinMin + '-' + proteinMax + 'g)</div></div>' +
-        '<div class="rec-macro-item"><div class="rm-label">Fiber</div><div class="rm-value">' + fiberRec + '</div><div class="rm-unit">g/day (min ' + fiberMin + 'g)</div></div>' +
-        '<div class="rec-macro-item"><div class="rm-label">Fats</div><div class="rm-value">' + fatRec + '</div><div class="rm-unit">g/day (' + fatMin + '-' + fatMax + 'g)</div></div>' +
-        '<div class="rec-macro-item"><div class="rm-label">Carbs</div><div class="rm-value">' + carbRec + '</div><div class="rm-unit">g/day (' + carbMin + '-' + carbMax + 'g)</div></div>' +
-      '</div>';
-  }
-
-  /* ── MODAL SYSTEM ── */
-  function openModal(id) {
-    var el = document.getElementById(id);
-    if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; }
-    if (id === 'mealModal') { renderFavList(); renderRecentMeals(); renderSavedMeals(); renderTimeSuggestions(); }
-    if (id === 'trendsModal') { requestAnimationFrame(function() { renderTrends(); renderHistory(); }); }
-    if (id === 'eventModal') { requestAnimationFrame(function() { updateEventStatus(); }); }
-    if (id === 'bodyModal') { requestAnimationFrame(function() { renderBodyStats(); renderWeightTrend(); }); }
-  }
-  function closeModal(id) {
-    var el = document.getElementById(id);
-    if (el) { el.classList.remove('open'); document.body.style.overflow = ''; }
-  }
-  document.querySelectorAll('.modal-close').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var id = btn.getAttribute('data-close-modal');
-      if (id) closeModal(id);
-    });
-  });
-  document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) closeModal(overlay.id);
-    });
-  });
-
-  /* ── Water ── */
-  function loadWater() {
-    try { var r = localStorage.getItem(LS_WATER); if (r) { var p = JSON.parse(r); waterIntake = p[todayStr()] || 0; } } catch(e) { waterIntake = 0; }
-    try { var rg = localStorage.getItem(LS_WATER_GOAL); if (rg) waterGoal = parseInt(rg, 10); } catch(e) { waterGoal = 2000; }
-  }
-  function saveWater() {
-    try {
-      var all = {};
-      var r = localStorage.getItem(LS_WATER);
-      if (r) all = JSON.parse(r);
-      all[todayStr()] = waterIntake;
-      localStorage.setItem(LS_WATER, JSON.stringify(all));
-    } catch(e) {}
-  }
-  function saveWaterGoal() { try { localStorage.setItem(LS_WATER_GOAL, String(waterGoal)); } catch(e) {} }
-  function addWater(amount) { waterIntake += amount; saveWater(); updateWaterProgress(); }
-  function resetWater() { waterIntake = 0; saveWater(); updateWaterProgress(); }
-  function updateWaterProgress() {
-    var pct = waterGoal > 0 ? Math.min((waterIntake / waterGoal) * 100, 100) : 0;
-    waterDisplay.textContent = waterIntake + ' / ' + waterGoal + ' ml';
-    waterBarFill.style.width = pct + '%';
-    waterBarFill.className = 'water-bar-fill' + (pct >= 100 ? ' over' : '');
-    waterGoalInput.value = waterGoal;
-  }
-  function archiveWater(ds) {
-    try {
-      var all = {};
-      var r = localStorage.getItem(LS_WATER);
-      if (r) all = JSON.parse(r);
-      if (!all[ds]) all[ds] = waterIntake;
-      localStorage.setItem(LS_WATER, JSON.stringify(all));
-    } catch(e) {}
-  }
-
-  /* ── Favorites ── */
-  function loadFavorites() { try { var r = localStorage.getItem(LS_FAVORITES); if (r) favorites = JSON.parse(r); } catch(e) { favorites = []; } }
-  function saveFavorites() { try { localStorage.setItem(LS_FAVORITES, JSON.stringify(favorites)); } catch(e) {} }
-  function isFavorite(foodName) { for (var i = 0; i < favorites.length; i++) { if (favorites[i].name.toLowerCase() === foodName.trim().toLowerCase()) return true; } return false; }
-  function toggleFavorite(food) {
-    var key = food.name.trim().toLowerCase();
-    for (var i = 0; i < favorites.length; i++) {
-      if (favorites[i].name.toLowerCase() === key) { favorites.splice(i, 1); saveFavorites(); updateFavStar(); return; }
-    }
-    favorites.push({ name: food.name, protein: food.protein, carbs: food.carbs, fats: food.fats, fiber: food.fiber });
-    saveFavorites();
-    updateFavStar();
-  }
-  function updateFavStar() {
-    if (selectedFood) {
-      favToggleBtn.style.display = '';
-      favToggleBtn.textContent = isFavorite(selectedFood.name) ? '★' : '☆';
-      favToggleBtn.className = 'fav-star' + (isFavorite(selectedFood.name) ? ' active' : '');
-    } else { favToggleBtn.style.display = 'none'; }
-  }
-  function renderFavList() {
-    if (!favorites.length) { favList.classList.remove('open'); favList.innerHTML = ''; return; }
-    var html = '<div class="fl-title">⭐ Favorites</div>';
-    favorites.forEach(function(f, i) {
-      html += '<span class="fl-item" data-fav-idx="' + i + '">' + escapeHtml(f.name) + '<span class="fl-item-del" data-fav-del="' + i + '"> ×</span></span>';
-    });
-    favList.innerHTML = html;
-    favList.querySelectorAll('.fl-item[data-fav-idx]').forEach(function(el) {
-      el.addEventListener('click', function(e) {
-        if (e.target.classList.contains('fl-item-del')) return;
-        var idx = parseInt(el.getAttribute('data-fav-idx'), 10);
-        if (idx >= 0 && idx < favorites.length) {
-          var f = favorites[idx];
-          foodNameInput.value = f.name;
-          selectedFood = f;
-          hideSearchResults();
-          favList.classList.remove('open');
-          updatePreview();
-          validateForm();
-        }
-      });
-    });
-    favList.querySelectorAll('.fl-item-del').forEach(function(el) {
-      el.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var idx = parseInt(el.getAttribute('data-fav-del'), 10);
-        if (idx >= 0 && idx < favorites.length) { favorites.splice(idx, 1); saveFavorites(); renderFavList(); }
-      });
-    });
-  }
-  function showFavList() { if (favorites.length > 0) { renderFavList(); favList.classList.add('open'); } }
-  function hideFavList() { favList.classList.remove('open'); }
-
-  /* —— Trends —— */
-  function getStreakCount() {
-    var dates = Object.keys(history).sort().reverse();
-    var streak = 0;
-    for (var i = 0; i < dates.length; i++) {
-      var h = history[dates[i]];
-      if (h.total <= (h.goal || dailyGoal) * 1.1) streak++;
-      else break;
-    }
-    return streak;
-  }
-  function renderTrends() {
-    var dates = Object.keys(history).sort().reverse().slice(0, 14);
-    var weekCals = 0, weekDays = 0, weekProtein = 0, weekCarbs = 0, weekFats = 0;
-    dates.slice(0, 7).forEach(function(d) {
-      var h = history[d];
-      weekCals += h.total || 0; weekDays++;
-      weekProtein += h.protein || 0; weekCarbs += h.carbs || 0; weekFats += h.fats || 0;
-    });
-    var streak = getStreakCount();
-    var avgCals = weekDays > 0 ? round(weekCals / weekDays, 0) : 0;
-    var avgP = weekDays > 0 ? round(weekProtein / weekDays, 1) : 0;
-    var avgC = weekDays > 0 ? round(weekCarbs / weekDays, 1) : 0;
-    var avgF = weekDays > 0 ? round(weekFats / weekDays, 1) : 0;
-    var h = '';
-    h += '<div class="trends-item"><div class="tr-label">Avg Calories</div><div class="tr-value">' + avgCals + '</div><div class="tr-sub">last 7 days</div></div>';
-    h += '<div class="trends-item"><div class="tr-label">Streak</div><div class="tr-value tr-streak">' + streak + ' days</div><div class="tr-sub">on goal</div></div>';
-    h += '<div class="trends-item"><div class="tr-label">Avg Protein</div><div class="tr-value">' + avgP + 'g</div><div class="tr-sub">last 7 days</div></div>';
-    h += '<div class="trends-item"><div class="tr-label">Avg Carbs / Fats</div><div class="tr-value" style="font-size:1rem">' + avgC + 'g / ' + avgF + 'g</div><div class="tr-sub">last 7 days</div></div>';
-    trendsGrid.innerHTML = h;
-    var chartDates = Object.keys(history).sort().reverse().slice(0, 7).reverse();
-    var maxCal = 0;
-    chartDates.forEach(function(d) { if ((history[d].total||0) > maxCal) maxCal = history[d].total||0; });
-    if (maxCal < 1) maxCal = 1;
-    var chartHtml = '<div class="card-title" style="margin-top:0">Last 7 Days Calories</div><div class="trends-chart">';
-    chartDates.forEach(function(d) {
-      var hh = history[d];
-      var val = hh.total || 0;
-      var pct = Math.max(2, (val / maxCal) * 100);
-      var goalVal = hh.goal || dailyGoal;
-      chartHtml += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;"><div class="tc-bar" style="height:'+pct+'%;background:'+(val>goalVal?'#f85149':'#3fb950')+'" title="'+val+' kcal"></div><div class="tc-day-label">'+d.slice(5)+'</div></div>';
-    });
-    chartHtml += '</div>';
-    trendsChartContainer.innerHTML = chartHtml;
-  }
-
-  /* —— Smart Macro Adjustments —— */
-  function loadAdaptive() { try { var r = localStorage.getItem(LS_ADAPTIVE); adaptiveEnabled = r === 'true'; if (adaptiveToggle) adaptiveToggle.checked = adaptiveEnabled; } catch(e) { adaptiveEnabled = false; } }
-  function saveAdaptive() { try { localStorage.setItem(LS_ADAPTIVE, String(adaptiveEnabled)); } catch(e) {} }
-  function hasSufficientHistory() { var c = 0; for (var k in history) { if (history.hasOwnProperty(k) && history[k].total > 0) c++; } return c >= 3; }
-  function applySmartAdjustments() {
-    if (!adaptiveEnabled) { adaptiveInfo.textContent = 'Adaptive goals are disabled. Toggle on to enable auto-adjustments.'; return; }
-    if (!hasSufficientHistory()) { adaptiveInfo.textContent = 'Need at least 3 days of tracking data before auto-adjusting goals.'; return; }
-    var dates = Object.keys(history).sort().reverse().slice(0, 5);
-    if (dates.length < 3) { adaptiveInfo.textContent = 'Not enough recent data. Keep tracking!'; return; }
-    var totalCals = 0, count = 0;
-    dates.forEach(function(d) { totalCals += history[d].total || 0; count++; });
-    var avgCals = totalCals / count;
-    var diff = avgCals - dailyGoal;
-    var adjust = 0;
-    if (Math.abs(diff) > 100) adjust = round(diff * 0.3, 0);
-    adjust = Math.max(-dailyGoal * 0.1, Math.min(dailyGoal * 0.1, adjust));
-    var newGoal = dailyGoal + adjust;
-    if (newGoal < 300) newGoal = 300;
-    if (newGoal > 10000) newGoal = 10000;
-    var oldGoal = dailyGoal;
-    if (Math.abs(adjust) >= 30) {
-      dailyGoal = round(newGoal, 0);
-      goalInput.value = dailyGoal;
-      saveGoal();
-      renderAll();
-      adaptiveInfo.textContent = 'Goal auto-adjusted from ' + oldGoal + ' to ' + dailyGoal + ' kcal (based on ' + count + ' day avg of ' + round(avgCals,0) + ' kcal).';
+  function updateCaloriesTopCard() {
+    if (!caloriesTopCard || !caloriesTopCardSub) return;
+    if (dailyGoal !== 2000) {
+      caloriesTopCardSub.textContent = '\u2705 Goals Set';
+      caloriesTopCardSub.style.color = '#3fb950';
     } else {
-      adaptiveInfo.textContent = 'Data stable. Current goal of ' + dailyGoal + ' kcal maintained (avg ' + round(avgCals,0) + ' kcal over ' + count + ' days).';
+      caloriesTopCardSub.textContent = '\u26a0\ufe0f Recommended to do first before anything';
+      caloriesTopCardSub.style.color = '#d29922';
     }
   }
+
 
   /* —— Hybrid Food Search —— */
   function searchFoods(query, callback) {
@@ -1727,8 +1519,32 @@
     foodNameInput.value = item.name;
     selectedFood = item;
     hideSearchResults();
+    updateServingSelector();
     updatePreview();
     validateForm();
+  }
+
+  function updateServingSelector() {
+    if (!servingWrap || !servingSelect || !selectedFood) {
+      if (servingWrap) servingWrap.style.display = 'none';
+      return;
+    }
+    var name = selectedFood.name.toLowerCase();
+    var servings = null;
+    Object.keys(FOOD_SERVINGS).forEach(function(key) {
+      if (name.indexOf(key) !== -1 || key.indexOf(name) !== -1) {
+        servings = FOOD_SERVINGS[key];
+      }
+    });
+    if (!servings) { servingWrap.style.display = 'none'; return; }
+    servingWrap.style.display = 'block';
+    servingSelect.innerHTML = '<option value="">Serving</option>';
+    servings.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s.qty !== null ? s.qty : 'custom';
+      opt.textContent = s.label;
+      servingSelect.appendChild(opt);
+    });
   }
 
   /* —— Preview —— */
@@ -1904,7 +1720,7 @@
   function setGoals() {
     var cal = parseInt(goalInput.value,10); if (isNaN(cal)||cal<1) { goalInput.value=dailyGoal; cal=dailyGoal; }
     macroGoals = {protein:parseInt(proteinGoalIn.value,10)||0,carbs:parseInt(carbsGoalIn.value,10)||0,fats:parseInt(fatsGoalIn.value,10)||0,fiber:parseInt(fiberGoalIn.value,10)||0};
-    dailyGoal = cal; saveGoal(); renderAll();
+    dailyGoal = cal; saveGoal(); updateCaloriesTopCard(); renderAll();
     waterGoal = parseInt(waterGoalInput.value,10) || 2000; saveWaterGoal(); updateWaterProgress();
   }
 
@@ -2892,6 +2708,7 @@
       renderMealSuggestions(); renderAll();
       renderProteinChart(); renderTodayPlan();
       displayQuote();
+      updateCaloriesTopCard();
       dashDate.textContent = formatDate(todayStr());
       waterGoalInput.value = waterGoal;
       updateWaterProgress();
@@ -2916,12 +2733,11 @@
     }
     if (foodQtyInput) foodQtyInput.addEventListener('input', function() { updatePreview(); validateForm(); });
     if (foodQtyUnit) foodQtyUnit.addEventListener('change', function() { updatePreview(); validateForm(); });
+    if (servingSelect) servingSelect.addEventListener('change', function() {
+      var val = servingSelect.value;
+      if (val && val !== 'custom') { foodQtyInput.value = parseInt(val, 10); updatePreview(); validateForm(); }
+    });
     if (mealNameInput) mealNameInput.addEventListener('input', validateForm);
-    if (calcRecommendBtn) calcRecommendBtn.addEventListener('click', calculateDietRecommendations);
-    if (weightInput) weightInput.addEventListener('input', calculateDietRecommendations);
-    if (weightUnit) weightUnit.addEventListener('change', calculateDietRecommendations);
-    if (heightInput) heightInput.addEventListener('input', calculateDietRecommendations);
-    if (heightUnit) heightUnit.addEventListener('change', calculateDietRecommendations);
 
     document.querySelectorAll('.water-btn[data-water]').forEach(function(btn) {
       btn.addEventListener('click', function() { addWater(parseInt(btn.getAttribute('data-water'),10)); });
@@ -2946,15 +2762,9 @@
       });
     });
 
-    // Diet rec toggle
-    if (toggleDietBtn) toggleDietBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      if (dietSection) {
-        var isHidden = dietSection.style.display === 'none' || dietSection.style.display === '';
-        dietSection.style.display = isHidden ? 'block' : 'none';
-        if (isHidden && weightInput) weightInput.focus();
-      }
-    });
+    // Top calories card -> settings modal
+    if (caloriesTopCard) caloriesTopCard.addEventListener('click', function() { openModal('settingsModal'); });
+    if (caloriesTopCardBtn) caloriesTopCardBtn.addEventListener('click', function(e) { e.stopPropagation(); openModal('settingsModal'); });
 
     if (foodForm) foodForm.addEventListener('submit', function(e) {
       e.preventDefault();
