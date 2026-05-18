@@ -586,6 +586,11 @@
         </div>
         <button type="button" class="cf-save" id="customFoodSaveBtn">Save to Database</button>
       </div>
+      <!-- Meal name moved to top -->
+      <div class="form-row">
+        <input type="text" id="mealNameInput" placeholder="Meal name (e.g. Breakfast)" list="mealSuggestions" required>
+        <datalist id="mealSuggestions"></datalist>
+      </div>
       <div class="form-row">
         <div class="food-search-wrap">
           <input type="text" id="foodNameInput" placeholder="Search food (e.g. Idli, Roti, Guava)" required>
@@ -622,8 +627,6 @@
         <button class="fav-star" id="favToggleBtn" style="display:none;" title="Save as favorite">?</button>
       </div>
       <div class="form-row">
-        <input type="text" id="mealNameInput" placeholder="Meal name (e.g. Breakfast)" list="mealSuggestions" required>
-        <datalist id="mealSuggestions"></datalist>
         <button type="submit" class="btn-add" id="addFoodBtn">+ Add Food</button>
         <button type="button" class="btn-add" id="saveMealBtn" style="background:#d29922;font-size:0.85rem;padding:12px 10px;">💾 Save Meal</button>
       </div>
@@ -1390,16 +1393,16 @@
         results.push({ name: f.name || key, protein: f.protein, carbs: f.carbs, fats: f.fats, fiber: f.fiber, source: 'cached' });
       }
     });
+    // Show local results immediately
+    var localResults = results.slice(0, 15);
+    if (callback) callback(null, localResults);
+    // Then fire XHR for API results (background enrichment)
     var url = 'https://world.openfoodfacts.org/cgi/search.pl?search_terms=' + encodeURIComponent(query.trim()) + '&page_size=5&json=1&fields=product_name,nutriments,code';
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.timeout = 6000;
     xhr.onload = function() {
-      if (xhr.status < 200 || xhr.status >= 300) {
-        if (results.length > 0) { if (callback) callback(null, results.slice(0, 15)); }
-        else { if (callback) callback(new Error('HTTP '+xhr.status), []); }
-        return;
-      }
+      if (xhr.status < 200 || xhr.status >= 300) return;
       try {
         var data = JSON.parse(xhr.responseText);
         (data.products || []).forEach(function(p) {
@@ -1409,20 +1412,10 @@
           var key = item.name.toLowerCase();
           if (!seen[key]) { seen[key] = true; results.push(item); setCached(item.name, item); }
         });
-        if (callback) callback(null, results.slice(0, 15));
-      } catch(e) {
-        if (results.length > 0) { if (callback) callback(null, results.slice(0, 15)); }
-        else { if (callback) callback(e, []); }
-      }
+        if (results.length > localResults.length && callback) callback(null, results.slice(0, 15));
+      } catch(e) {}
     };
-    xhr.onerror = function() {
-      if (results.length > 0) { if (callback) callback(null, results.slice(0, 15)); }
-      else { if (callback) callback(new Error('Network error'), []); }
-    };
-    xhr.ontimeout = function() {
-      if (results.length > 0) { if (callback) callback(null, results.slice(0, 15)); }
-      else { if (callback) callback(new Error('Timeout'), []); }
-    };
+    xhr.onerror = xhr.ontimeout = function() {};
     xhr.send();
   }
 
@@ -2734,11 +2727,9 @@
       setupPWA();
       loadData(); loadFoodCache(); loadMealTypes(); loadEventBuffer(); checkDayChange();
       loadBodyStats(); loadSavedMeals(); loadCustomFoods(); loadMealTargets(); loadCompactMode(); loadPlan();
-      goalInput.value=dailyGoal; proteinGoalIn.value=macroGoals.protein; carbsGoalIn.value=macroGoals.carbs; fatsGoalIn.value=macroGoals.fats; fiberGoalIn.value=macroGoals.fiber;
+      if (goalInput) goalInput.value=dailyGoal; if (proteinGoalIn) proteinGoalIn.value=macroGoals.protein; if (carbsGoalIn) carbsGoalIn.value=macroGoals.carbs; if (fatsGoalIn) fatsGoalIn.value=macroGoals.fats; if (fiberGoalIn) fiberGoalIn.value=macroGoals.fiber;
       renderMealSuggestions(); renderAll();
       renderProteinChart(); renderTodayPlan();
-      displayQuote();
-      updateCaloriesTopCard();
       dashDate.textContent = formatDate(todayStr());
       waterGoalInput.value = waterGoal;
       updateWaterProgress();
@@ -2863,6 +2854,8 @@
     if (datePicker) datePicker.addEventListener('change', function() {
       if (datePicker.value) setViewDate(datePicker.value);
     });
+    displayQuote();
+    updateCaloriesTopCard();
     validateForm();
     } catch(e) { console.error('listener error:', e); }
   }
