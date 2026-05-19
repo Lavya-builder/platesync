@@ -887,7 +887,7 @@
   <div class="modal-content">
     <button class="modal-close" data-close-modal="scannerOverlay">&times;</button>
     <div class="modal-title">📷 Scan Barcode</div>
-    <div style="text-align:center;margin-bottom:12px;font-size:0.82rem;color:#8b949e;">Barcode scanning not supported here — type the number below or search in the app</div>
+    <div id="scannerTitleMsg" style="text-align:center;margin-bottom:12px;font-size:0.82rem;color:#8b949e;">📷 Point camera at the barcode</div>
     <div class="scanner-box" style="width:100%;max-width:300px;height:200px;border-radius:12px;overflow:hidden;background:#0d1117;margin:0 auto 14px;position:relative;">
       <video id="scannerVideo" autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:none;"></video>
       <div id="scannerFrame" style="position:absolute;inset:15px;border:2px solid #3fb950;border-radius:8px;pointer-events:none;display:none;"></div>
@@ -1447,8 +1447,7 @@
           var data = JSON.parse(xhr.responseText);
           if (data.status !== 1 || !data.product) { if (!called) { called = true; tryIndia(); } return; }
           var p = data.product;
-          var n = p.nutriments;
-          if (!n || n.proteins_100g == null) { if (!called) { called = true; tryIndia(); } return; }
+          var n = p.nutriments || {};
           var item = { name: p.product_name || 'Unknown', protein: parseFloat(n.proteins_100g)||0, carbs: parseFloat(n.carbohydrates_100g)||0, fats: parseFloat(n.fat_100g)||0, fiber: parseFloat(n.fiber_100g)||0, sugars: parseFloat(n.sugars_100g)!=null?parseFloat(n.sugars_100g):null, saturatedFat: parseFloat(n['saturated-fat_100g'])!=null?parseFloat(n['saturated-fat_100g']):null, sodium: parseFloat(n.sodium_100g)!=null?parseFloat(n.sodium_100g):null, source: 'api', code: p.code || barcode };
           setCached(item.name, item);
           called = true;
@@ -1470,8 +1469,7 @@
           var data = JSON.parse(xhr.responseText);
           if (data.status !== 1 || !data.product) { callback(new Error('Product not found'), null); return; }
           var p = data.product;
-          var n = p.nutriments;
-          if (!n || n.proteins_100g == null) { callback(new Error('No nutrition data'), null); return; }
+          var n = p.nutriments || {};
           var item = { name: p.product_name || 'Unknown', protein: parseFloat(n.proteins_100g)||0, carbs: parseFloat(n.carbohydrates_100g)||0, fats: parseFloat(n.fat_100g)||0, fiber: parseFloat(n.fiber_100g)||0, sugars: parseFloat(n.sugars_100g)!=null?parseFloat(n.sugars_100g):null, saturatedFat: parseFloat(n['saturated-fat_100g'])!=null?parseFloat(n['saturated-fat_100g']):null, sodium: parseFloat(n.sodium_100g)!=null?parseFloat(n.sodium_100g):null, source: 'api', code: p.code || barcode };
           setCached(item.name, item);
           callback(null, item);
@@ -1929,8 +1927,10 @@
     var captureWrap = document.getElementById('captureBtnWrap');
     var detectHint = document.getElementById('detectHint');
     var manualInput = document.getElementById('manualUpcInput');
+    var scannerTitle = document.getElementById('scannerTitleMsg');
     if (video) video.style.display = 'none';
     if (frame) frame.style.display = 'none';
+    if (scannerTitle) scannerTitle.textContent = '📷 Point camera at the barcode';
     if (fbMsg) fbMsg.style.display = 'flex';
     if (hintOverlay) hintOverlay.style.display = 'none';
     if (captureWrap) captureWrap.style.display = 'none';
@@ -1939,6 +1939,7 @@
     if (scannerDetectTimeout) { clearTimeout(scannerDetectTimeout); scannerDetectTimeout = null; }
     // Browser check: skip camera if BarcodeDetector not available
     if (!window.BarcodeDetector) {
+      if (scannerTitle) scannerTitle.textContent = '📷 Barcode scanning not supported';
       if (fbMsg) {
         fbMsg.textContent = '📷 This browser cannot scan barcodes.\nType the 8-13 digit barcode number or search food by name.';
         fbMsg.style.display = 'flex';
